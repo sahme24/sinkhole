@@ -1,0 +1,39 @@
+# kube-prometheus-stack values (reference).
+# Install: helm install kps prometheus-community/kube-prometheus-stack -n monitoring --create-namespace -f monitoring-values.yaml
+# Set the Grafana admin password through a Secret or the UI. Do not commit it.
+alertmanager:
+  enabled: false          # alerting is done by Grafana-managed alerts
+
+kubeEtcd:
+  enabled: false
+kubeScheduler:
+  enabled: false
+kubeControllerManager:
+  enabled: false
+kubeProxy:
+  enabled: false
+
+prometheus:
+  prometheusSpec:
+    retention: 7d
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: local-path
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 10Gi
+
+grafana:
+  persistence:
+    enabled: true
+    storageClassName: local-path
+    size: 2Gi
+  resources:
+    requests:
+      cpu: 50m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 1Gi         # 384Mi caused an OOM kill

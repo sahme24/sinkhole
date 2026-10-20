@@ -1,0 +1,76 @@
+# Reference manifest. The Secret is created separately (see docs/alerting-and-access.md).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: adguard-exporter
+  namespace: monitoring
+  labels:
+    app: adguard-exporter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: adguard-exporter
+  template:
+    metadata:
+      labels:
+        app: adguard-exporter
+    spec:
+      containers:
+        - name: adguard-exporter
+          # Pin a specific tag for reproducible builds
+          image: ghcr.io/henrywhitaker3/adguard-exporter:latest
+          ports:
+            - name: metrics
+              containerPort: 9618
+          env:
+            - name: ADGUARD_SERVERS
+              value: "http://10.20.0.102"
+            - name: ADGUARD_INTERVAL
+              value: "30s"
+            - name: ADGUARD_USERNAMES
+              valueFrom:
+                secretKeyRef:
+                  name: adguard-exporter
+                  key: username
+            - name: ADGUARD_PASSWORDS
+              valueFrom:
+                secretKeyRef:
+                  name: adguard-exporter
+                  key: password
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              memory: 128Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: adguard-exporter
+  namespace: monitoring
+  labels:
+    app: adguard-exporter
+spec:
+  selector:
+    app: adguard-exporter
+  ports:
+    - name: metrics
+      port: 9618
+      targetPort: metrics
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: adguard-exporter
+  namespace: monitoring
+  labels:
+    release: kps
+spec:
+  selector:
+    matchLabels:
+      app: adguard-exporter
+  endpoints:
+    - port: metrics
+      interval: 30s

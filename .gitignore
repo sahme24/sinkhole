@@ -1,0 +1,5 @@
+live-export/
+*.env
+*secret*.yaml
+*.bak
+AdGuardHome.yaml

@@ -1,0 +1,14 @@
+# /etc/systemd/system/wifi-keepalive.service
+# The access point disconnects idle clients (DISASSOC_DUE_TO_INACTIVITY).
+# A steady ping keeps the link active. A cable is the permanent fix.
+[Unit]
+Description=Keep Wi-Fi link active
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+ExecStart=/bin/ping -q -i 5 10.20.0.1
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

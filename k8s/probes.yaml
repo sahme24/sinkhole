@@ -1,0 +1,36 @@
+# Reference manifest. Probes are picked up by Prometheus through the release: kps label.
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: lab-ping
+  namespace: monitoring
+  labels:
+    release: kps
+spec:
+  interval: 30s
+  module: icmp
+  prober:
+    url: blackbox-exporter.monitoring.svc:9115
+  targets:
+    staticConfig:
+      static:
+        - 10.20.0.1     # FortiGate lab gateway
+        - 10.20.0.100   # TP-Link access point
+        - 1.1.1.1       # internet reachability
+---
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: lab-dns
+  namespace: monitoring
+  labels:
+    release: kps
+spec:
+  interval: 60s
+  module: dns_adguard
+  prober:
+    url: blackbox-exporter.monitoring.svc:9115
+  targets:
+    staticConfig:
+      static:
+        - 10.20.0.102:53  # AdGuard Home
